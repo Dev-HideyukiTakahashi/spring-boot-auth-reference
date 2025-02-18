@@ -91,21 +91,44 @@ public SecurityFilterChain h2SecurityFilterChain(HttpSecurity http) throws Excep
 }
 ```
 
+### **Liberar todos endpoints para testes (Spring Boot 3.1+)**
+
+```java
+@Configuration
+public class SecurityConfig {
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable());
+    http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    return http.build();
+  }
+}
+```
+
 ---
 
 ## 🔑 **Checklist OAuth2 JWT (Password Grant)**
+
+- Oauth 2 com JWT
+  - no repositório do bootcamp
+  - copiar o arquivo AuthorizationServerConfig e ResourceServerConfig
+  - copiar a pasta customgrant
 
 ### **Configuração de Valores**
 
 No arquivo `application.properties` ou `application.yml`, adicione as configurações necessárias:
 
 ```properties
+spring.profiles.active=${APP_PROFILE:test}
+
 security.client-id=${CLIENT_ID:myclientid}
 security.client-secret=${CLIENT_SECRET:myclientsecret}
-
 security.jwt.duration=${JWT_DURATION:86400}
 
 cors.origins=${CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+spring.jpa.open-in-view=false
 ```
 
 ### **Dependências Necessárias**
@@ -140,7 +163,7 @@ Use anotações como `@PreAuthorize` para restringir o acesso a determinadas rot
 
 ---
 
-🔐 Métodos para Acessar o Usuário Autenticado
+## 🔐 Métodos para Acessar o Usuário Autenticado
 
 Código para acessar o usuário autenticado via JWT e retornar os dados do usuário logado:
 
@@ -168,6 +191,40 @@ protected User authenticated() {
 public UserDTO getLoggedUser() {
   User user = authenticated();
   return new UserDTO(user);
+}
+```
+---
+## 🔒 Criptografar Senha ao Salvar um 'User'
+
+* Na classe de configuração:
+
+```java
+@Bean
+public BCryptPasswordEncoder passwordEncoder(){
+  return new BCryptPasswordEncoder();
+}
+```
+
+* Exemplo na classe service:
+
+```java
+public UserDTO save(UserInsertDTO dto) {
+  User entity = new User();
+  copyDtoToEntity(dto, entity);
+  entity = userRepository.save(entity);
+  return modelMapper.map(entity, UserDTO.class);
+}
+
+// método para reaproveitar código, já que podemos ter um UserUpdateDTO também.
+private void copyDtoToEntity(UserDTO dto, User entity, String password) {
+  entity.getRoles().clear();
+  modelMapper.map(dto, entity);
+  for (RoleDTO roleDTO : dto.getRoles()) {
+    Role role = roleRepository.getReferenceById(roleDTO.getId());
+    entity.getRoles().add(role);
+  }
+  // Criptografando a senha
+  entity.setPassword(passwordEncoder.encode(password));
 }
 ```
 ---
