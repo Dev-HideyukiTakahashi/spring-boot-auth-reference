@@ -182,7 +182,7 @@ protected User authenticated() {
 
     return userRepository.findByEmail(username).get();
   } catch (Exception e) {
-    throw new UsernameNotFoundException("Email not found");
+    throw new UsernameNotFoundException("Invalid user");
   }
 }
 
