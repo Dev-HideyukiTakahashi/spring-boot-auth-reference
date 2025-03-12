@@ -228,3 +228,11 @@ private void copyDtoToEntity(UserDTO dto, User entity, String password) {
 }
 ```
 ---
+## 🔥 Script para automatizar token no Postman
+
+```javascript
+if (responseCode.code >= 200 && responseCode.code < 300) {
+   var json = JSON.parse(responseBody);
+   postman.setEnvironmentVariable('token', json.access_token);
+} 
+```
