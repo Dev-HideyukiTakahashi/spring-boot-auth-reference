@@ -45,6 +45,26 @@ public class SecurityConfig {
 
 ![](/resources/spring-security-model.png)
 
+
+### **loadUserByUsername**
+
+```java
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    List<UserDetailsProjection> list = userRepository.searchUserAndRolesByEmail(username);
+    if (list.isEmpty())
+      throw new UsernameNotFoundException("User not found!");
+
+    User user = new User();
+    user.setEmail(username);
+    user.setPassword(list.get(0).getPassword());
+    list.forEach(role -> user.addRole(new Role(role.getRoleId(), role.getAuthority())));
+
+    return user;
+  }
+```
+
+
 ### **UserDetailsProjection**
 
 Interface para definir os dados de um usuário.
