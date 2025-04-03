@@ -64,6 +64,21 @@ public class SecurityConfig {
   }
 ```
 
+### **Alteração na entidade User para facilitar acesso**
+
+```java
+  public void addRole(Role role){
+    roles.add(role);
+  }
+
+  public boolean hasRole(String roleName) {
+    for (Role r : roles) {
+      if (roleName.equals(r.getAuthority()))
+        return true;
+    }
+    return false;
+  }
+```
 
 ### **UserDetailsProjection**
 
